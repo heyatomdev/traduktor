@@ -7,7 +7,6 @@ import {
   Client,
   EmbedBuilder,
 } from 'discord.js';
-import { WelcomeService } from '../welcome/welcome.service';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -16,37 +15,18 @@ export class DiscordService {
 
   public constructor(
     private readonly client: Client,
-    private readonly welcomeService: WelcomeService,
     private readonly configService: ConfigService,
   ) {}
 
   @Once('ready')
   public onReady(@Context() [client]: ContextOf<'ready'>) {
-    client.user.setActivity(`Scanning for new art...`, { type: 4 });
+    client.user.setActivity(`Translating your text!`, { type: 4 });
     this.logger.log(`Bot logged in as ${client.user.username}`);
   }
 
   @On('warn')
   public onWarn(@Context() [message]: ContextOf<'warn'>) {
     this.logger.warn(message);
-  }
-
-  /**
-   * Welcome a new member to the server
-   * @param member
-   */
-  @On('guildMemberAdd')
-  public async onGuildMemberAdd(
-    @Context() [member]: ContextOf<'guildMemberAdd'>,
-  ) {
-    this.logger.log(`${member.user.tag} joined the server}`);
-    const content = await this.welcomeService.createWelcomeEmbedContent(
-      member.user,
-    );
-    const welcomeChannelId =
-      this.configService.get('discord.channels.welcome') ||
-      member.guild.systemChannelId;
-    await this.sendEmbedded(welcomeChannelId, content);
   }
 
   /**
